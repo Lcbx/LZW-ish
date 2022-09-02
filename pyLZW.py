@@ -9,11 +9,11 @@ MIN_SIZE = 6
 def encode(word, simplify = True):
 	
 	# a dictionnary with the possible sequences
-	# an entry is reference of previous input
-	# a tuple of (index, length)
+	# an entry is a reference to previous input
+	# an entry consists of a tuple : (index, length)
 	references = {}
 	
-	# the code we'll  return
+	# the encoded result we're building
 	code = [] #BitStream()
 	
 	# the sequence of characters being evaluated
@@ -110,6 +110,7 @@ def decode(code, toDecode = None):
 #		<? bytes till next ref>data<ref><? bits till next ref>data...
 #		need to experiment with the sizes
 #		maybe make the nBits of encoded distance be determined using the max(distance)
+#	* instead of merging refs, maybe continue comparing after the end of the ref see if the match continues
 
 
 

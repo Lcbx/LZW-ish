@@ -6,12 +6,12 @@ this version has some features/optimizations :
 * contiguous references are merged together
 
 ### Is it usable as is ?
-NO
-the encoder only accepts strings
-the encoded output isn't fit for saving into a file as-is
+NO  
+the encoder only accepts strings  
+the encoded output isn't fit for saving into a file as-is  
 
 ### Can i use it ?
-sure, just don't say it's your original code.
+Sure, just don't say it's your original code.
 
 ### Example
 ```
