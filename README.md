@@ -30,18 +30,17 @@ Sure, just don't say it's your original code.
 143: I do not like green eggs and ham.
 ```
 
-becomes (minimum ref size = 6)
+becomes (minimum ref size = 5)
 
 ```
 I am Sam
 
 Sam I am
 
-That Sam-I-am!(19, 12)am!
+That Sam-I-am!(19, 15)
 I do not like
-t(21, 12)!
-
-Do you like green eggs and ham?
-(38, 12)ke them,(24, 6)-am.(90, 7)(45, 6)(68, 18)am.
+t(21, 14)
+Do you(58, 5) green eggs and ham?
+(49, 14) them,(24, 9).(112, 15)(92, 18).
 ```
 

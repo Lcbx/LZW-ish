@@ -4,9 +4,9 @@
 
 # min size of the sequence to be replaced
 # (because the referring process is not free in both memory space and computation)
-MIN_SIZE = 6
+MIN_SIZE = 5
 
-def encode(word, simplify = True):
+def encode(input, simplify = True):
 	
 	# a dictionnary with the possible sequences
 	# an entry is a reference to previous input
@@ -16,55 +16,58 @@ def encode(word, simplify = True):
 	# the encoded result we're building
 	code = [] #BitStream()
 	
-	# the sequence of characters being evaluated
-	sequence = ""
-	# for each character in the word we are encoding
-	for c in word:
+	SIZE = len(input)
+	if SIZE<MIN_SIZE:
+		return input
+	
+	# the part of the input we are considering
+	start, end = 0, MIN_SIZE
+	
+	# while we haven't seen the whole input
+	while end < SIZE:
 		
-		# add it to the sequence we are currently considering
-		temp = sequence + c
+		lookahead = input[start:end]
+		sequence  = lookahead[:-1]
 		
 		# if we know the result or it's too small
-		# we just keep looking
-		if temp in references or len(temp) < MIN_SIZE:
-			sequence = temp
+		# we just look farther
+		if lookahead in references or len(lookahead) < MIN_SIZE:
+			end+=1
 			
 		else:
 			# add the unknown sequence to our dict
-			references[temp] = ( len(code), len(temp) )
+			references[lookahead] = ( start, len(lookahead) )
 			
 			# if we know the current sequence, we add a reference to the original
 			if sequence in references:
 				ref = references[sequence]
-				pos, length = ref
 				
-				# simplify by merging contiguous refs
-				if simplify and isinstance(code[-1], tuple):
-					oldPos, oldLength = code[-1]
-					if oldPos+oldLength == pos:
-						ref = (oldPos,oldLength+length)
-						code[-1] = ref
-						#print("replaced", sequence, ref)
+				# simplify by merging continuous refs
+				if simplify:
+					pos, length = ref
 					
-				# add the ref
-					else:
-						code.append(ref)
-						#print("after", sequence, ref)
+					i = MIN_SIZE
+					while pos+i<start and input[pos+i] == input[start+i]:
+						i+=1
+					
+					code.append( (pos, i) )
+					start += i
+					end = max(MIN_SIZE, end-i)
 				else:
+					# we add the ref found as-is
 					code.append(ref)
-					#print("as-is", sequence, ref)
-				
-				# the sequence is reset to only the new character
-				sequence = c
+					start = end-1
+					end = start + MIN_SIZE
 			else:
 				# if we don't know the sequence
-				# we add the current character to the code
-				# and keep moving by removing the first char of the sequence
+				# we pass the start character
 				code.append(sequence[0])
-				sequence = temp[1:]
+				start += 1
+				end = start+MIN_SIZE
 	
 	# there is usually an unincoded sequence remaining
-	if sequence:
+	if start < end:
+		sequence = input[start:end]
 		if sequence in references:
 			code.append(references[sequence])
 		else:
@@ -74,43 +77,30 @@ def encode(word, simplify = True):
 
 
 
-def decode(code, toDecode = None):
+def decode(code):
 	
 	# the string we'll  return
 	word = ""
 	
-	if not toDecode: toDecode = code
-	
 	# for each character in the word we are decoding
-	for c in toDecode:
-		
+	for c in code:
+		# if it a simple char, add it
 		if isinstance(c, str):
 			word += c
 		else:
+		# if it's a ref, find it and add it
 			pos, length = c
-			found = code[pos:pos+length]
-			#print(pos, length, found)
-			
-			# sometimes, a ref is within the sequence being referred to !
-			shouldDecode = any( [ (isinstance(ch, tuple)) for ch in found] )
-			res = decode(code,found) if shouldDecode else ''.join(found)
-			
-			if len(res) > length:
-				res = res[:length]
-			word += res
+			found = word[pos:pos+length]
+			word += found
 	
 	return word
 
 # TODO :
-#	* there's a bug in simplify ->
-#		sometimes when a 'as-is' follows an 'after' (see prints) the ref is wrong
-#		try with MIN_SIZE = 5 to reproduce
 #	* use bytes, make an encoding for refs
 #		something like
 #		<? bytes till next ref>data<ref><? bits till next ref>data...
 #		need to experiment with the sizes
 #		maybe make the nBits of encoded distance be determined using the max(distance)
-#	* instead of merging refs, maybe continue comparing after the end of the ref see if the match continues
 
 
 
@@ -131,19 +121,21 @@ I do not like them, Sam-I-am.
 I do not like green eggs and ham.
 	"""
 	TEST = encode(TEST_STR, False)
-	TEST2 = encode(TEST_STR)
-	
-	print()
-	
-	#print(TEST)
 	print(''.join(map(str, TEST)))
-	#print(decode(TEST))
+	resTest = decode(TEST)
+	#print(resTest)
+	print(TEST_STR == resTest)
 	
 	print()
 	
-	#print(TEST2)
+	TEST2 = encode(TEST_STR)
 	print(''.join(map(str, TEST2)))
-	#print(decode(TEST2))
+	resTest2 = decode(TEST2)
+	#print(resTest2)
+	print(TEST_STR == resTest2)
+	
+	print()
+	
 	
 	
 	print('ratios', len(TEST_STR), len(TEST),len(TEST)/len(TEST_STR), len(TEST2), len(TEST2)/len(TEST_STR))
