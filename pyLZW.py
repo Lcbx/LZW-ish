@@ -4,7 +4,7 @@
 
 # min size of the sequence to be replaced
 # (because the referring process is not free in both memory space and computation)
-MIN_SIZE = 5
+MIN_REF_SIZE = 5
 
 def encode(input, simplify = True):
 	
@@ -16,22 +16,22 @@ def encode(input, simplify = True):
 	# the encoded result we're building
 	code = [] #BitStream()
 	
-	SIZE = len(input)
-	if SIZE<MIN_SIZE:
+	INPUT_SIZE = len(input)
+	if SIZE<MIN_REF_SIZE:
 		return input
 	
 	# the part of the input we are considering
-	start, end = 0, MIN_SIZE
+	start, end = 0, MIN_REF_SIZE
 	
 	# while we haven't seen the whole input
-	while end < SIZE:
+	while end < INPUT_SIZE:
 		
 		lookahead = input[start:end]
 		sequence  = lookahead[:-1]
 		
 		# if we know the result or it's too small
 		# we just look farther
-		if lookahead in references or len(lookahead) < MIN_SIZE:
+		if lookahead in references or len(lookahead) < MIN_REF_SIZE:
 			end+=1
 			
 		else:
@@ -46,24 +46,25 @@ def encode(input, simplify = True):
 				if simplify:
 					pos, length = ref
 					
-					i = MIN_SIZE
+					i = MIN_REF_SIZE
 					while pos+i<start and input[pos+i] == input[start+i]:
 						i+=1
 					
 					code.append( (pos, i) )
 					start += i
-					end = max(MIN_SIZE, end-i)
 				else:
 					# we add the ref found as-is
 					code.append(ref)
 					start = end-1
-					end = start + MIN_SIZE
 			else:
 				# if we don't know the sequence
 				# we pass the start character
 				code.append(sequence[0])
 				start += 1
-				end = start+MIN_SIZE
+			
+			# when we have added a new character/ref
+			# we start from MIN_REF_SIZE again
+			end = start + MIN_REF_SIZE
 	
 	# there is usually an unincoded sequence remaining
 	if start < end:
