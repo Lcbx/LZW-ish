@@ -17,7 +17,7 @@ def encode(input, simplify = True):
 	code = [] #BitStream()
 	
 	INPUT_SIZE = len(input)
-	if SIZE<MIN_REF_SIZE:
+	if INPUT_SIZE<MIN_REF_SIZE:
 		return input
 	
 	# the part of the input we are considering
