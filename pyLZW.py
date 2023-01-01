@@ -2,11 +2,13 @@
 #from bitstring import BitArray, BitStream
 
 
-# min size of the sequence to be replaced
-# (because the referring process is not free in both memory space and computation)
-MIN_REF_SIZE = 5
-
-def encode(input, simplify = True):
+def encode(input, MIN_REF_SIZE=5, MAX_REF_SIZE=0xFF):
+	
+	# MIN_REF_SIZE : min size of the sequence to be replaced
+	# (because the referring process is not free in both memory space and computation)
+	
+	# MAX_REF_SIZE : max size of the sequence to be replaced
+	# (because the encoding process uses a byte to encode length)
 	
 	# no need to enc ode if too small for it
 	INPUT_SIZE = len(input)
@@ -53,12 +55,15 @@ def encode(input, simplify = True):
 				# this is a ref site, save the relative ref offset
 				code[ref_call_site] = len(code) - ref_call_site
 				
-				# simplify by merging continuous refs
-				if simplify:
+				# merge continuous refs
+				if MIN_REF_SIZE < MAX_REF_SIZE:
 					pos, length = ref
 					
 					i = MIN_REF_SIZE
-					while pos+i<start and input[pos+i] == input[start+i]:
+					while i<MAX_REF_SIZE     and \
+						  pos+i<start        and \
+						  start+i<INPUT_SIZE and \
+						  input[pos+i] == input[start+i]:
 						i+=1
 					
 					ref = (pos, i)
@@ -145,7 +150,6 @@ def decode(code):
 if __name__ == '__main__':
 
 	TEST_STR = """I am Sam
-
 Sam I am
 
 That Sam-I-am!
@@ -156,9 +160,8 @@ that Sam-I-am!
 Do you like green eggs and ham?
 
 I do not like them, Sam-I-am.
-I do not like green eggs and ham.
-	"""
-	TEST = encode(TEST_STR, False)
+I do not like green eggs and ham."""
+	TEST = encode(TEST_STR, 5, 5)
 	print(TEST)
 	#print(''.join(map(str, TEST)))
 	resTest = decode(TEST)
@@ -175,7 +178,5 @@ I do not like green eggs and ham.
 	print(TEST_STR == resTest2)
 	
 	print()
-	
-	
 	
 	print('ratios', len(TEST_STR), len(TEST),len(TEST)/len(TEST_STR), len(TEST2), len(TEST2)/len(TEST_STR))
